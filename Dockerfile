@@ -8,8 +8,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY src src
 
-# Clean Maven cache and build the project with Maven
-RUN mvn clean package -f pom.xml \
+# Clean Maven cache and build the project with Maven (force fresh dependency downloads)
+RUN mvn clean package -U -f pom.xml \
     && rm -f /app/target/original-*.jar
 
 # Use a minimal eclipse-temurin image for running the bot
