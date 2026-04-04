@@ -17,6 +17,8 @@ import net.hypixel.nerdbot.tickets.model.ChannelIndexStats;
 import net.hypixel.nerdbot.tickets.model.Ticket;
 import net.hypixel.nerdbot.tickets.model.TicketReservationResult;
 import net.hypixel.nerdbot.tickets.model.TicketStatus;
+import net.hypixel.nerdbot.marmalade.exception.RepositoryException;
+import net.hypixel.nerdbot.marmalade.functional.Result;
 import net.hypixel.nerdbot.marmalade.storage.repository.Repository;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -107,31 +109,38 @@ public class TicketRepository extends Repository<Ticket> {
 
     /**
      * Override findById to use integer type for ticketNumber filter.
+     * Checks the open ticket cache, then the closed ticket cache, then MongoDB.
      */
     @Override
-    public Ticket findById(String id) {
+    public Result<Ticket, RepositoryException> findById(String id) {
         Ticket cachedObject = getCache().getIfPresent(id);
         if (cachedObject != null) {
             log.debug("Found ticket with ID {} in cache", id);
-            return cachedObject;
+            return Result.success(cachedObject);
         }
 
         // Also check closed ticket cache
         Ticket closedTicket = closedTicketCache.getIfPresent(id);
         if (closedTicket != null) {
             log.debug("Found ticket with ID {} in closed cache", id);
-            return closedTicket;
+            return Result.success(closedTicket);
         }
 
-        // Use integer for ticketNumber filter to match MongoDB's storage type
-        Document document = getMongoCollection().find(Filters.eq("ticketNumber", Integer.parseInt(id))).first();
-        if (document != null) {
-            Ticket ticket = documentToEntity(document);
-            cacheTicketAppropriately(ticket);
-            return ticket;
+        try {
+            // Use integer for ticketNumber filter to match MongoDB's storage type
+            Document document = getMongoCollection().find(Filters.eq("ticketNumber", Integer.parseInt(id))).first();
+            if (document != null) {
+                Ticket ticket = documentToEntity(document);
+                cacheTicketAppropriately(ticket);
+                return Result.success(ticket);
+            }
+        } catch (com.mongodb.MongoException e) {
+            log.error("Database error looking up ticket with ID {}", id, e);
+            return Result.failure(new RepositoryException("Database error looking up ticket ID: " + id, e));
         }
 
-        return null;
+        log.debug("Ticket with ID {} not found in cache or database", id);
+        return Result.failure(new RepositoryException("Not found: " + id));
     }
 
     /**
@@ -237,10 +246,13 @@ public class TicketRepository extends Repository<Ticket> {
         String ticketId = channelIdIndex.get(channelId);
         if (ticketId != null) {
             // Try open ticket cache first (most common case)
-            Ticket cachedTicket = findById(ticketId);
-            if (cachedTicket != null) {
-                log.debug("Found open ticket {} in cache for thread {}", cachedTicket.getFormattedTicketId(), channelId);
-                return Optional.of(cachedTicket);
+            Result<Ticket, RepositoryException> findResult = findById(ticketId);
+            if (findResult.isSuccess()) {
+                Ticket cachedTicket = findResult.orElse(null);
+                if (cachedTicket != null) {
+                    log.debug("Found open ticket {} in cache for thread {}", cachedTicket.getFormattedTicketId(), channelId);
+                    return Optional.of(cachedTicket);
+                }
             }
 
             // Try closed ticket cache
