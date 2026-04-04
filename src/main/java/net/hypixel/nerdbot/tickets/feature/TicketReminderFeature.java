@@ -10,7 +10,6 @@ import net.hypixel.nerdbot.discord.config.NerdBotConfig;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
 import net.hypixel.nerdbot.discord.util.DiscordBotEnvironment;
 
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,22 +35,13 @@ public class TicketReminderFeature extends BotFeature implements SchedulableFeat
     }
 
     @Override
-    public TimerTask buildTask() {
-        return new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    TicketConfig config = TicketBot.config().getTicketConfig();
-                    if (!config.isRemindersEnabled()) {
-                        return;
-                    }
+    public void executeTask() throws Exception {
+        TicketConfig config = TicketBot.config().getTicketConfig();
+        if (!config.isRemindersEnabled()) {
+            return;
+        }
 
-                    TicketService.getInstance().sendReminders();
-                } catch (Exception e) {
-                    log.error("Error running ticket reminder task", e);
-                }
-            }
-        };
+        TicketService.getInstance().sendReminders();
     }
 
     @Override

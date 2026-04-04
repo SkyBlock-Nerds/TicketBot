@@ -6,7 +6,6 @@ import net.hypixel.nerdbot.discord.api.feature.BotFeature;
 import net.hypixel.nerdbot.discord.api.feature.SchedulableFeature;
 import net.hypixel.nerdbot.discord.config.NerdBotConfig;
 
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,17 +26,8 @@ public class TicketAutoCloseFeature extends BotFeature implements SchedulableFea
     }
 
     @Override
-    public TimerTask buildTask() {
-        return new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    TicketService.getInstance().closeStaleTickets();
-                } catch (Exception e) {
-                    log.error("Error running ticket auto-close task", e);
-                }
-            }
-        };
+    public void executeTask() throws Exception {
+        TicketService.getInstance().closeStaleTickets();
     }
 
     @Override
