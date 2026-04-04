@@ -1,9 +1,10 @@
 package net.hypixel.nerdbot.tickets.service;
 
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.hypixel.nerdbot.marmalade.discord.EmbedFactory;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
 import net.hypixel.nerdbot.tickets.config.TicketReminderThreshold;
 import net.hypixel.nerdbot.tickets.model.Ticket;
@@ -37,14 +38,10 @@ public class TicketNotificationService {
 
         String closedByText = closedBy != null ? closedBy.getEffectiveName() : "System (Auto-close)";
 
-        EmbedBuilder embed = new EmbedBuilder()
-            .setTitle("Ticket Closed")
-            .setDescription("Your ticket **" + ticket.getFormattedTicketId() + "** has been closed.")
-            .setColor(0xED4245) // Red
+        EmbedBuilder embed = EmbedFactory.error("Ticket Closed", "Your ticket **" + ticket.getFormattedTicketId() + "** has been closed.")
             .addField("Closed By", closedByText, true)
             .addField("Reason", reason != null ? reason : "No reason provided", true)
-            .setFooter("If you need further assistance, feel free to open a new ticket.")
-            .setTimestamp(java.time.Instant.now());
+            .setFooter("If you need further assistance, feel free to open a new ticket.");
 
         owner.openPrivateChannel()
             .flatMap(ch -> ch.sendMessageEmbeds(embed.build()))
@@ -67,14 +64,10 @@ public class TicketNotificationService {
             return;
         }
 
-        EmbedBuilder embed = new EmbedBuilder()
-            .setTitle("Ticket Reopened")
-            .setDescription("Your ticket **" + ticket.getFormattedTicketId() + "** has been reopened.")
-            .setColor(0x57F287) // Green
+        EmbedBuilder embed = EmbedFactory.success("Ticket Reopened", "Your ticket **" + ticket.getFormattedTicketId() + "** has been reopened.")
             .addField("Reopened By", reopenedBy.getEffectiveName(), true)
             .addField("Channel", "<#" + ticket.getChannelId() + ">", true)
-            .setFooter("You can continue the conversation in the ticket channel.")
-            .setTimestamp(java.time.Instant.now());
+            .setFooter("You can continue the conversation in the ticket channel.");
 
         owner.openPrivateChannel()
             .flatMap(ch -> ch.sendMessageEmbeds(embed.build()))
@@ -125,11 +118,7 @@ public class TicketNotificationService {
             return;
         }
 
-        EmbedBuilder embed = new EmbedBuilder()
-            .setTitle("Ticket Claimed")
-            .setDescription(claimedBy.getAsMention() + " is now handling this ticket.")
-            .setColor(0x5865F2)
-            .setTimestamp(java.time.Instant.now());
+        EmbedBuilder embed = EmbedFactory.info("Ticket Claimed", claimedBy.getAsMention() + " is now handling this ticket.");
 
         channel.sendMessageEmbeds(embed.build()).queue(
             null,

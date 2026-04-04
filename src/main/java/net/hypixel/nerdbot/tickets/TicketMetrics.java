@@ -4,77 +4,49 @@ import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import io.prometheus.client.exporter.HTTPServer;
-import io.prometheus.client.hotspot.DefaultExports;
 import lombok.extern.slf4j.Slf4j;
+import net.hypixel.nerdbot.marmalade.metrics.MetricsRegistry;
 
 @Slf4j
 public final class TicketMetrics {
 
     private static final int DEFAULT_PORT = 9191;
 
-    public static final Counter TICKETS_CREATED = Counter.build()
-        .name("tickets_created_total")
-        .help("Total tickets created")
-        .labelNames("category")
-        .register();
+    public static final Counter TICKETS_CREATED = MetricsRegistry.counter(
+        "tickets_created_total", "Total tickets created", "category");
 
-    public static final Counter TICKETS_CLOSED = Counter.build()
-        .name("tickets_closed_total")
-        .help("Total tickets closed")
-        .labelNames("close_type")
-        .register();
+    public static final Counter TICKETS_CLOSED = MetricsRegistry.counter(
+        "tickets_closed_total", "Total tickets closed", "close_type");
 
-    public static final Counter TICKETS_REOPENED = Counter.build()
-        .name("tickets_reopened_total")
-        .help("Total tickets reopened")
-        .register();
+    public static final Counter TICKETS_REOPENED = MetricsRegistry.counter(
+        "tickets_reopened_total", "Total tickets reopened");
 
-    public static final Counter TICKET_MESSAGES = Counter.build()
-        .name("ticket_messages_total")
-        .help("Messages in tickets")
-        .labelNames("author_type")
-        .register();
+    public static final Counter TICKET_MESSAGES = MetricsRegistry.counter(
+        "ticket_messages_total", "Messages in tickets", "author_type");
 
-    public static final Counter TICKET_STAFF_ACTIONS = Counter.build()
-        .name("ticket_staff_actions_total")
-        .help("Staff actions on tickets")
-        .labelNames("action", "staff_id")
-        .register();
+    public static final Counter TICKET_STAFF_ACTIONS = MetricsRegistry.counter(
+        "ticket_staff_actions_total", "Staff actions on tickets", "action", "staff_id");
 
-    public static final Counter TICKET_REMINDERS_SENT = Counter.build()
-        .name("ticket_reminders_sent_total")
-        .help("Reminders sent for stale tickets")
-        .register();
+    public static final Counter TICKET_REMINDERS_SENT = MetricsRegistry.counter(
+        "ticket_reminders_sent_total", "Reminders sent for stale tickets");
 
-    public static final Gauge TICKETS_OPEN = Gauge.build()
-        .name("tickets_open_current")
-        .help("Currently open tickets")
-        .labelNames("status")
-        .register();
+    public static final Gauge TICKETS_OPEN = MetricsRegistry.gauge(
+        "tickets_open_current", "Currently open tickets", "status");
 
-    public static final Gauge TICKETS_CLAIMED = Gauge.build()
-        .name("tickets_claimed_current")
-        .help("Currently claimed tickets per staff")
-        .labelNames("staff_id")
-        .register();
+    public static final Gauge TICKETS_CLAIMED = MetricsRegistry.gauge(
+        "tickets_claimed_current", "Currently claimed tickets per staff", "staff_id");
 
-    public static final Histogram TICKET_FIRST_RESPONSE_TIME = Histogram.build()
-        .name("ticket_first_response_seconds")
-        .help("Time to first staff response")
-        .buckets(300, 900, 1_800, 3_600, 7_200, 14_400, 28_800, 86_400)
-        .register();
+    public static final Histogram TICKET_FIRST_RESPONSE_TIME = MetricsRegistry.histogram(
+        "ticket_first_response_seconds", "Time to first staff response",
+        new double[]{300, 900, 1_800, 3_600, 7_200, 14_400, 28_800, 86_400});
 
-    public static final Histogram TICKET_RESOLUTION_TIME = Histogram.build()
-        .name("ticket_resolution_seconds")
-        .help("Time from creation to closure")
-        .buckets(1_800, 3_600, 14_400, 86_400, 259_200, 604_800)
-        .register();
+    public static final Histogram TICKET_RESOLUTION_TIME = MetricsRegistry.histogram(
+        "ticket_resolution_seconds", "Time from creation to closure",
+        new double[]{1_800, 3_600, 14_400, 86_400, 259_200, 604_800});
 
-    public static final Histogram TICKET_MESSAGE_COUNT = Histogram.build()
-        .name("ticket_message_count")
-        .help("Messages per ticket at closure")
-        .buckets(1, 3, 5, 10, 20, 50, 100)
-        .register();
+    public static final Histogram TICKET_MESSAGE_COUNT = MetricsRegistry.histogram(
+        "ticket_message_count", "Messages per ticket at closure",
+        new double[]{1, 3, 5, 10, 20, 50, 100});
 
     private static HTTPServer server;
 
@@ -89,11 +61,7 @@ public final class TicketMetrics {
                 server.close();
             }
 
-            server = new HTTPServer.Builder()
-                .withPort(port)
-                .build();
-
-            DefaultExports.initialize();
+            server = MetricsRegistry.startServer(port);
             log.info("Prometheus metrics server started on port {}", port);
         } catch (Exception e) {
             log.error("Failed to start Prometheus metrics server on port {}", port, e);

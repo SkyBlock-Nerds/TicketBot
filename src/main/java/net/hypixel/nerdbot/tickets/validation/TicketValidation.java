@@ -1,6 +1,7 @@
 package net.hypixel.nerdbot.tickets.validation;
 
 import lombok.experimental.UtilityClass;
+import net.hypixel.nerdbot.marmalade.validation.Preconditions;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
 
 /**
@@ -22,9 +23,7 @@ public class TicketValidation {
      * @throws IllegalArgumentException if the category is null, blank, or doesn't exist
      */
     public static void validateCategoryId(String categoryId, TicketConfig config) {
-        if (categoryId == null || categoryId.isBlank()) {
-            throw new IllegalArgumentException("Category ID is required");
-        }
+        Preconditions.notBlank(categoryId, "Category ID");
 
         if (config.getCategoryById(categoryId).isEmpty()) {
             throw new IllegalArgumentException("Invalid category: " + categoryId);
@@ -66,17 +65,10 @@ public class TicketValidation {
      * @throws IllegalArgumentException if the description is invalid
      */
     public static void validateDescription(String description, int minLength, int maxLength) {
-        if (description == null || description.isBlank()) {
-            throw new IllegalArgumentException("Description is required");
-        }
+        Preconditions.notBlank(description, "Description");
 
         String trimmed = description.trim();
-        if (trimmed.length() < minLength) {
-            throw new IllegalArgumentException("Description must be at least " + minLength + " characters");
-        }
-
-        if (trimmed.length() > maxLength) {
-            throw new IllegalArgumentException("Description cannot exceed " + maxLength + " characters");
-        }
+        Preconditions.minLength(trimmed, minLength, "Description");
+        Preconditions.maxLength(trimmed, maxLength, "Description");
     }
 }

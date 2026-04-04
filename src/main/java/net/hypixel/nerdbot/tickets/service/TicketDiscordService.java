@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.hypixel.nerdbot.discord.role.RoleManager;
+import net.hypixel.nerdbot.marmalade.discord.MessageSplitter;
 import net.hypixel.nerdbot.tickets.util.TicketTranscriptGenerator;
 import net.hypixel.nerdbot.tickets.control.BuiltInTicketActions;
 import net.hypixel.nerdbot.tickets.control.TicketAction;
@@ -33,15 +34,12 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 /**
  * Handles Discord-specific ticket operations (channels, permissions, UI components).
  */
 @Slf4j
 public class TicketDiscordService {
-
-    private static final int MAX_MESSAGE_LENGTH = 2_000;
 
     private final TicketConfig config;
     private final TicketRepository ticketRepository;
@@ -96,7 +94,7 @@ public class TicketDiscordService {
         String header = generateInitialPost(user, ticket, categoryName);
 
         // Calculate how much description fits in first message
-        int remainingSpace = MAX_MESSAGE_LENGTH - header.length();
+        int remainingSpace = Message.MAX_CONTENT_LENGTH - header.length();
         String firstMessageContent;
         String remainingDescription = null;
 
@@ -136,7 +134,7 @@ public class TicketDiscordService {
 
             // Send remaining description in follow-up messages
             if (remainingDescription != null) {
-                List<String> chunks = splitMessage(remainingDescription);
+                List<String> chunks = MessageSplitter.split(remainingDescription);
                 for (String chunk : chunks) {
                     channel.sendMessage(chunk).complete();
                 }
@@ -661,9 +659,4 @@ public class TicketDiscordService {
         }
     }
 
-    private List<String> splitMessage(String content) {
-        return IntStream.iterate(0, i -> i < content.length(), i -> i + MAX_MESSAGE_LENGTH)
-            .mapToObj(i -> content.substring(i, Math.min(i + MAX_MESSAGE_LENGTH, content.length())))
-            .toList();
-    }
 }

@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.aerh.slashcommands.api.annotations.SlashAutocompleteHandler;
 import net.aerh.slashcommands.api.annotations.SlashCommand;
 import net.aerh.slashcommands.api.annotations.SlashOption;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -17,6 +16,8 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.hypixel.nerdbot.tickets.service.TicketService;
 import net.hypixel.nerdbot.marmalade.csv.CSVData;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.hypixel.nerdbot.marmalade.discord.EmbedFactory;
 import net.hypixel.nerdbot.discord.BotEnvironment;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
 import net.hypixel.nerdbot.tickets.model.ChannelIndexStats;
@@ -72,10 +73,7 @@ public class TicketCommands {
               Our team will assist you as soon as possible.
               """;
 
-        EmbedBuilder embed = new EmbedBuilder()
-            .setTitle(embedTitle)
-            .setDescription(embedDescription)
-            .setColor(0x5865F2);
+        EmbedBuilder embed = EmbedFactory.info(embedTitle, embedDescription);
 
         Button createButton = Button.primary("ticket:create", "Create Ticket")
             .withEmoji(Emoji.fromUnicode("\uD83C\uDFAB")); // 🎫
