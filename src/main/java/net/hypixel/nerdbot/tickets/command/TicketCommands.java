@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.hypixel.nerdbot.tickets.service.TicketService;
 import net.hypixel.nerdbot.marmalade.csv.CSVData;
+import net.hypixel.nerdbot.marmalade.format.TimeUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.hypixel.nerdbot.marmalade.discord.EmbedFactory;
 import net.hypixel.nerdbot.discord.BotEnvironment;
@@ -498,11 +499,10 @@ public class TicketCommands {
         // Parse date range
         long fromTimestamp = 0;
         long toTimestamp = Long.MAX_VALUE;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         if (fromDate != null && !fromDate.isEmpty()) {
             try {
-                LocalDate date = LocalDate.parse(fromDate, formatter);
+                LocalDate date = LocalDate.parse(fromDate, TimeUtils.DATE_ONLY);
                 fromTimestamp = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
             } catch (DateTimeParseException e) {
                 event.getHook().editOriginal("Invalid from date format. Use YYYY-MM-DD.").queue();
@@ -512,7 +512,7 @@ public class TicketCommands {
 
         if (toDate != null && !toDate.isEmpty()) {
             try {
-                LocalDate date = LocalDate.parse(toDate, formatter);
+                LocalDate date = LocalDate.parse(toDate, TimeUtils.DATE_ONLY);
                 toTimestamp = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
             } catch (DateTimeParseException e) {
                 event.getHook().editOriginal("Invalid to date format. Use YYYY-MM-DD.").queue();
@@ -540,23 +540,21 @@ public class TicketCommands {
             "Ticket#", "Owner ID", "Status", "Category", "Created", "Closed", "Claimed By", "Messages"
         ));
 
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
         for (Ticket ticket : tickets) {
             List<String> row = new ArrayList<>();
             row.add(ticket.getFormattedTicketId());
             row.add(ticket.getOwnerId());
             row.add(config.getStatusDisplayName(ticket.getStatus()));
             row.add(config.getCategoryDisplayName(ticket.getTicketCategoryId()));
-            row.add(formatTimestamp(ticket.getCreatedAt(), outputFormatter));
-            row.add(ticket.getClosedAt() > 0 ? formatTimestamp(ticket.getClosedAt(), outputFormatter) : "");
+            row.add(formatTimestamp(ticket.getCreatedAt(), TimeUtils.DATE_TIME));
+            row.add(ticket.getClosedAt() > 0 ? formatTimestamp(ticket.getClosedAt(), TimeUtils.DATE_TIME) : "");
             row.add(ticket.getClaimedById() != null ? ticket.getClaimedById() : "");
             row.add(String.valueOf(ticket.getMessages() != null ? ticket.getMessages().size() : 0));
             csv.addRow(row);
         }
 
         String csvContent = csv.toCSV();
-        String filename = "tickets-export-" + LocalDate.now().format(formatter) + ".csv";
+        String filename = "tickets-export-" + LocalDate.now().format(TimeUtils.DATE_ONLY) + ".csv";
 
         event.getHook().editOriginal("Exported " + tickets.size() + " tickets:")
             .setFiles(FileUpload.fromData(csvContent.getBytes(StandardCharsets.UTF_8), filename))
@@ -593,11 +591,10 @@ public class TicketCommands {
         // Parse date range
         long fromTimestamp = 0;
         long toTimestamp = Long.MAX_VALUE;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         if (fromDate != null && !fromDate.isEmpty()) {
             try {
-                LocalDate date = LocalDate.parse(fromDate, formatter);
+                LocalDate date = LocalDate.parse(fromDate, TimeUtils.DATE_ONLY);
                 fromTimestamp = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
             } catch (DateTimeParseException e) {
                 event.getHook().editOriginal("Invalid from date format. Use YYYY-MM-DD.").queue();
@@ -607,7 +604,7 @@ public class TicketCommands {
 
         if (toDate != null && !toDate.isEmpty()) {
             try {
-                LocalDate date = LocalDate.parse(toDate, formatter);
+                LocalDate date = LocalDate.parse(toDate, TimeUtils.DATE_ONLY);
                 toTimestamp = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
             } catch (DateTimeParseException e) {
                 event.getHook().editOriginal("Invalid to date format. Use YYYY-MM-DD.").queue();

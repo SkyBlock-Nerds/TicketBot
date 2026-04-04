@@ -5,6 +5,7 @@ import net.hypixel.nerdbot.tickets.config.TicketConfig;
 import net.hypixel.nerdbot.tickets.model.Ticket;
 import net.hypixel.nerdbot.tickets.model.TicketFieldValue;
 import net.hypixel.nerdbot.tickets.model.TicketMessage;
+import net.hypixel.nerdbot.marmalade.format.TimeUtils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -18,7 +19,7 @@ import java.time.format.DateTimeFormatter;
 @UtilityClass
 public class TicketTranscriptGenerator {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = TimeUtils.DATE_TIME;
 
     /**
      * Produce a human-readable transcript for the provided ticket, including
