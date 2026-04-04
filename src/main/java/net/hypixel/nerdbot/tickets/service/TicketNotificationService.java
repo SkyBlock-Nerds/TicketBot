@@ -3,6 +3,7 @@ package net.hypixel.nerdbot.tickets.service;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.hypixel.nerdbot.marmalade.discord.EmbedFactory;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
 import net.hypixel.nerdbot.tickets.config.TicketReminderThreshold;

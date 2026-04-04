@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.hypixel.nerdbot.marmalade.discord.EmbedFactory;
 import net.hypixel.nerdbot.tickets.service.TicketService;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;

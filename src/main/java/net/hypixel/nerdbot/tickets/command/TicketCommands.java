@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.hypixel.nerdbot.tickets.service.TicketService;
 import net.hypixel.nerdbot.marmalade.csv.CSVData;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.hypixel.nerdbot.marmalade.discord.EmbedFactory;
 import net.hypixel.nerdbot.discord.BotEnvironment;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
