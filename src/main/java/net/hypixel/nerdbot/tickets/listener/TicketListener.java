@@ -3,7 +3,6 @@ package net.hypixel.nerdbot.tickets.listener;
 import net.hypixel.nerdbot.tickets.TicketBot;
 
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -23,6 +22,7 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+import net.hypixel.nerdbot.marmalade.discord.EmbedFactory;
 import net.hypixel.nerdbot.tickets.service.TicketService;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
 import net.hypixel.nerdbot.tickets.config.TicketTemplate;
@@ -59,10 +59,7 @@ public class TicketListener {
         }
 
         // Direct users to use the ticket panel in the server
-        EmbedBuilder embed = new EmbedBuilder()
-            .setTitle("Tickets")
-            .setDescription("To create or reply to a ticket, please use the **Create Ticket** button in the server.")
-            .setColor(0x5865F2)
+        EmbedBuilder embed = EmbedFactory.info("Tickets", "To create or reply to a ticket, please use the **Create Ticket** button in the server.")
             .setFooter("If you have an open ticket, you can reply directly in your ticket channel.");
 
         event.getChannel().sendMessageEmbeds(embed.build()).queue(

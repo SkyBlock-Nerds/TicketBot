@@ -1,17 +1,17 @@
 package net.hypixel.nerdbot.tickets.service;
 
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.hypixel.nerdbot.marmalade.discord.EmbedFactory;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
 import net.hypixel.nerdbot.tickets.model.Ticket;
 import net.hypixel.nerdbot.tickets.model.TicketStatus;
 import net.hypixel.nerdbot.discord.util.DiscordBotEnvironment;
 import net.hypixel.nerdbot.discord.util.StringUtils;
 
-import java.time.Instant;
+import java.awt.Color;
 
 /**
  * Logs ticket activity events to a configured Discord channel using embeds.
@@ -19,13 +19,7 @@ import java.time.Instant;
 @Slf4j
 public class TicketActivityLogger {
 
-    private static final int COLOR_CREATED = 0x57F287;    // Green
-    private static final int COLOR_CLAIMED = 0x5865F2;    // Blurple
-    private static final int COLOR_STATUS = 0xFEE75C;     // Yellow
-    private static final int COLOR_CLOSED = 0xED4245;     // Red
-    private static final int COLOR_REOPENED = 0x57F287;   // Green
-    private static final int COLOR_TRANSFERRED = 0x5865F2; // Blurple
-    private static final int COLOR_DELETED = 0x99AAB5;    // Gray
+    private static final Color COLOR_DELETED = new Color(0x99, 0xAA, 0xB5); // Gray - no preset match
 
     private final TicketConfig config;
 
@@ -35,26 +29,18 @@ public class TicketActivityLogger {
 
     public void logCreated(Ticket ticket, User creator) {
         String categoryName = config.getCategoryDisplayName(ticket.getTicketCategoryId());
-        MessageEmbed embed = new EmbedBuilder()
-            .setTitle("Ticket Created")
-            .setDescription(ticket.getFormattedTicketId())
+        MessageEmbed embed = EmbedFactory.success("Ticket Created", ticket.getFormattedTicketId())
             .addField("Created By", creator.getAsMention(), true)
             .addField("Category", categoryName, true)
             .addField("Channel", "<#" + ticket.getChannelId() + ">", true)
-            .setColor(COLOR_CREATED)
-            .setTimestamp(Instant.now())
             .build();
         sendEmbed(embed);
     }
 
     public void logClaimed(Ticket ticket, User staff) {
-        MessageEmbed embed = new EmbedBuilder()
-            .setTitle("Ticket Claimed")
-            .setDescription(ticket.getFormattedTicketId())
+        MessageEmbed embed = EmbedFactory.info("Ticket Claimed", ticket.getFormattedTicketId())
             .addField("Claimed By", staff.getAsMention(), true)
             .addField("Channel", "<#" + ticket.getChannelId() + ">", true)
-            .setColor(COLOR_CLAIMED)
-            .setTimestamp(Instant.now())
             .build();
         sendEmbed(embed);
     }
@@ -62,13 +48,9 @@ public class TicketActivityLogger {
     public void logStatusChange(Ticket ticket, TicketStatus oldStatus, TicketStatus newStatus, User actor) {
         String oldName = config.getStatusDisplayName(oldStatus);
         String newName = config.getStatusDisplayName(newStatus);
-        MessageEmbed embed = new EmbedBuilder()
-            .setTitle("Status Changed")
-            .setDescription(ticket.getFormattedTicketId())
-            .addField("Status", oldName + " → " + newName, true)
+        MessageEmbed embed = EmbedFactory.warning("Status Changed", ticket.getFormattedTicketId())
+            .addField("Status", oldName + " -> " + newName, true)
             .addField("Changed By", actor.getAsMention(), true)
-            .setColor(COLOR_STATUS)
-            .setTimestamp(Instant.now())
             .build();
         sendEmbed(embed);
     }
@@ -76,50 +58,34 @@ public class TicketActivityLogger {
     public void logClosed(Ticket ticket, User staff, String reason) {
         String closedBy = staff != null ? staff.getAsMention() : "System (Auto-close)";
         String reasonText = reason != null && !reason.isBlank() ? StringUtils.truncate(reason, 200) : "No reason provided";
-        MessageEmbed embed = new EmbedBuilder()
-            .setTitle("Ticket Closed")
-            .setDescription(ticket.getFormattedTicketId())
+        MessageEmbed embed = EmbedFactory.error("Ticket Closed", ticket.getFormattedTicketId())
             .addField("Closed By", closedBy, true)
             .addField("Reason", reasonText, false)
-            .setColor(COLOR_CLOSED)
-            .setTimestamp(Instant.now())
             .build();
         sendEmbed(embed);
     }
 
     public void logReopened(Ticket ticket, User staff) {
-        MessageEmbed embed = new EmbedBuilder()
-            .setTitle("Ticket Reopened")
-            .setDescription(ticket.getFormattedTicketId())
+        MessageEmbed embed = EmbedFactory.success("Ticket Reopened", ticket.getFormattedTicketId())
             .addField("Reopened By", staff.getAsMention(), true)
             .addField("Channel", "<#" + ticket.getChannelId() + ">", true)
-            .setColor(COLOR_REOPENED)
-            .setTimestamp(Instant.now())
             .build();
         sendEmbed(embed);
     }
 
     public void logTransferred(Ticket ticket, User from, User to, User actor) {
         String fromName = from != null ? from.getAsMention() : "Unclaimed";
-        MessageEmbed embed = new EmbedBuilder()
-            .setTitle("Ticket Transferred")
-            .setDescription(ticket.getFormattedTicketId())
+        MessageEmbed embed = EmbedFactory.info("Ticket Transferred", ticket.getFormattedTicketId())
             .addField("From", fromName, true)
             .addField("To", to.getAsMention(), true)
             .addField("By", actor.getAsMention(), true)
-            .setColor(COLOR_TRANSFERRED)
-            .setTimestamp(Instant.now())
             .build();
         sendEmbed(embed);
     }
 
     public void logAutoDeleted(Ticket ticket) {
-        MessageEmbed embed = new EmbedBuilder()
-            .setTitle("Ticket Deleted")
-            .setDescription(ticket.getFormattedTicketId())
+        MessageEmbed embed = EmbedFactory.create("Ticket Deleted", ticket.getFormattedTicketId(), COLOR_DELETED)
             .addField("Reason", "Retention period expired", false)
-            .setColor(COLOR_DELETED)
-            .setTimestamp(Instant.now())
             .build();
         sendEmbed(embed);
     }
