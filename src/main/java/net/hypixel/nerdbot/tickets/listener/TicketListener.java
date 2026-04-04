@@ -32,9 +32,12 @@ import net.hypixel.nerdbot.tickets.model.Ticket;
 import net.hypixel.nerdbot.tickets.model.TicketFieldValue;
 import net.hypixel.nerdbot.discord.util.DiscordBotEnvironment;
 
+import net.hypixel.nerdbot.marmalade.validation.Validator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Primary event listener for the ticketing system.
@@ -177,6 +180,37 @@ public class TicketListener {
 
         if (templateOpt.isPresent()) {
             TicketTemplate template = templateOpt.get();
+
+            // Validate all fields at once so the user sees every problem in one reply
+            Validator validator = Validator.create();
+            for (TicketTemplateField field : template.getFields()) {
+                ModalMapping mapping = event.getValue(field.getId());
+                String value = mapping != null ? mapping.getAsString() : "";
+
+                if (field.isRequired()) {
+                    validator.notBlank(value, field.getLabel());
+                }
+                if (value != null && !value.isEmpty()) {
+                    if (field.getMinLength() > 0) {
+                        validator.minLength(value, field.getMinLength(), field.getLabel());
+                    }
+                    if (field.getMaxLength() > 0) {
+                        validator.maxLength(value, field.getMaxLength(), field.getLabel());
+                    }
+                }
+            }
+
+            if (validator.hasErrors()) {
+                String errorMessage = validator.getErrors().stream()
+                    .map(e -> "- " + e.fieldName() + ": " + e.message())
+                    .collect(Collectors.joining("\n"));
+                event.getHook().editOriginal("Please fix the following errors:\n" + errorMessage).queue(
+                    null,
+                    error -> log.error("Failed to send validation error reply to user {}", userId, error)
+                );
+                return;
+            }
+
             for (TicketTemplateField field : template.getFields()) {
                 ModalMapping mapping = event.getValue(field.getId());
                 if (mapping != null && !mapping.getAsString().isEmpty()) {
