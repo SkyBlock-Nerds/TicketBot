@@ -8,7 +8,6 @@ import net.hypixel.nerdbot.discord.api.feature.BotFeature;
 import net.hypixel.nerdbot.discord.api.feature.SchedulableFeature;
 import net.hypixel.nerdbot.discord.config.DiscordBotConfig;
 import net.hypixel.nerdbot.discord.config.FeatureConfig;
-import net.hypixel.nerdbot.discord.config.NerdBotConfig;
 import net.hypixel.nerdbot.marmalade.exception.RepositoryException;
 import net.hypixel.nerdbot.marmalade.storage.database.Database;
 import org.slf4j.Logger;
@@ -109,19 +108,12 @@ public class TicketBot extends AbstractDiscordBot {
                         log.info("Added feature from config: {}", featureConfig.getClassName());
 
                         if (feature instanceof SchedulableFeature schedulable) {
-                            // SchedulableFeature expects NerdBotConfig, so we pass null-safe defaults
-                            long defaultInitial = 60_000; // 1 minute default
-                            long defaultPeriod = 300_000; // 5 minutes default
-
-                            try {
-                                // Try to use the interface methods with a NerdBotConfig-compatible config
-                                defaultInitial = schedulable.defaultInitialDelayMs(null);
-                                defaultPeriod = schedulable.defaultPeriodMs(null);
-                            } catch (Exception e) {
-                                log.debug("Using default scheduling for {}", featureConfig.getClassName());
-                            }
-
-                            feature.scheduleAtFixedRate(schedulable.buildTask(), defaultInitial, defaultPeriod);
+                            feature.scheduleAtFixedRate(
+                                feature.getClass().getSimpleName() + "-task",
+                                schedulable::executeTask,
+                                schedulable.defaultInitialDelayMs(config),
+                                schedulable.defaultPeriodMs(config)
+                            );
                         }
                     } catch (Exception e) {
                         log.warn("Failed to instantiate feature {}", featureConfig.getClassName(), e);

@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.hypixel.nerdbot.tickets.service.TicketService;
 import net.hypixel.nerdbot.discord.api.feature.BotFeature;
 import net.hypixel.nerdbot.discord.api.feature.SchedulableFeature;
-import net.hypixel.nerdbot.discord.config.NerdBotConfig;
+import net.hypixel.nerdbot.discord.config.DiscordBotConfig;
 import net.hypixel.nerdbot.tickets.config.TicketConfig;
 import net.hypixel.nerdbot.discord.util.DiscordBotEnvironment;
 
@@ -20,12 +20,12 @@ import java.util.concurrent.TimeUnit;
 public class TicketReminderFeature extends BotFeature implements SchedulableFeature {
 
     @Override
-    public long defaultInitialDelayMs(NerdBotConfig config) {
+    public long defaultInitialDelayMs(DiscordBotConfig config) {
         return TimeUnit.MINUTES.toMillis(2);
     }
 
     @Override
-    public long defaultPeriodMs(NerdBotConfig config) {
+    public long defaultPeriodMs(DiscordBotConfig config) {
         TicketConfig ticketConfig = TicketBot.config().getTicketConfig();
         int intervalMinutes = ticketConfig.getReminderCheckIntervalMinutes();
 
