@@ -5,9 +5,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Activity;
 import net.hypixel.nerdbot.discord.AbstractDiscordBot;
 import net.hypixel.nerdbot.discord.api.feature.BotFeature;
-import net.hypixel.nerdbot.discord.api.feature.SchedulableFeature;
 import net.hypixel.nerdbot.discord.config.DiscordBotConfig;
-import net.hypixel.nerdbot.discord.config.FeatureConfig;
 import net.hypixel.nerdbot.marmalade.exception.RepositoryException;
 import net.hypixel.nerdbot.marmalade.storage.database.Database;
 import org.slf4j.Logger;
@@ -21,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -81,49 +78,7 @@ public class TicketBot extends AbstractDiscordBot {
 
     @Override
     protected @NotNull Collection<? extends BotFeature> createFeatures() {
-        TicketBotConfig config = getConfig();
-        List<BotFeature> features = new ArrayList<>();
-
-        if (config.getFeatures() != null) {
-            log.info("Loading features from config ({} entries)", config.getFeatures().size());
-
-            config.getFeatures().stream()
-                .filter(FeatureConfig::isEnabled)
-                .forEach(featureConfig -> {
-                    try {
-                        if (!isAllowed(featureConfig.getClassName())) {
-                            log.warn("Feature class {} not permitted by class allowlist", featureConfig.getClassName());
-                            return;
-                        }
-
-                        Class<?> clazz = Class.forName(featureConfig.getClassName());
-                        if (!BotFeature.class.isAssignableFrom(clazz)) {
-                            log.warn("Feature class {} does not implement BotFeature", featureConfig.getClassName());
-                            return;
-                        }
-
-                        BotFeature feature = (BotFeature) clazz.getDeclaredConstructor().newInstance();
-                        feature.setScheduleOverrides(featureConfig.getInitialDelayMs(), featureConfig.getPeriodMs());
-                        features.add(feature);
-                        log.info("Added feature from config: {}", featureConfig.getClassName());
-
-                        if (feature instanceof SchedulableFeature schedulable) {
-                            feature.scheduleAtFixedRate(
-                                feature.getClass().getSimpleName() + "-task",
-                                schedulable::executeTask,
-                                schedulable.defaultInitialDelayMs(config),
-                                schedulable.defaultPeriodMs(config)
-                            );
-                        }
-                    } catch (Exception e) {
-                        log.warn("Failed to instantiate feature {}", featureConfig.getClassName(), e);
-                    }
-                });
-        } else {
-            log.info("No feature config present");
-        }
-
-        return features;
+        return createConfiguredFeatures();
     }
 
     @Override
@@ -163,7 +118,4 @@ public class TicketBot extends AbstractDiscordBot {
         TicketMetrics.stopMetricsServer();
     }
 
-    private static boolean isAllowed(String className) {
-        return className != null && className.startsWith("net.hypixel.nerdbot.");
-    }
 }
