@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.hypixel.nerdbot.tickets.service.TicketService;
 import net.hypixel.nerdbot.discord.api.feature.BotFeature;
 import net.hypixel.nerdbot.discord.api.feature.SchedulableFeature;
-import net.hypixel.nerdbot.discord.config.NerdBotConfig;
+import net.hypixel.nerdbot.discord.config.DiscordBotConfig;
 
 import java.util.concurrent.TimeUnit;
 
@@ -16,12 +16,12 @@ import java.util.concurrent.TimeUnit;
 public class TicketAutoCloseFeature extends BotFeature implements SchedulableFeature {
 
     @Override
-    public long defaultInitialDelayMs(NerdBotConfig config) {
+    public long defaultInitialDelayMs(DiscordBotConfig config) {
         return TimeUnit.MINUTES.toMillis(1);
     }
 
     @Override
-    public long defaultPeriodMs(NerdBotConfig config) {
+    public long defaultPeriodMs(DiscordBotConfig config) {
         return TimeUnit.HOURS.toMillis(1);
     }
 
